@@ -1,5 +1,6 @@
 #include <gtkmm.h>
 #include <iostream>
+#include <class/Button.hpp>
 
 class MyWindow : public Gtk::Window
 {
@@ -21,27 +22,8 @@ public:
 
         for (const auto &text : items)
         {
-            auto row = Gtk::make_managed<Gtk::ListBoxRow>();
-            auto button = Gtk::make_managed<Gtk::Button>(text);
-
-            button->signal_clicked().connect(
-                [this, text]()
-                {
-                    on_button_clicked(text);
-                });
-
-            auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 8);
-            auto icon = Gtk::make_managed<Gtk::Image>();
-            icon->set_from_resource("/org/kyrene/assets/icons/game-icon.svg");
-            auto label = Gtk::make_managed<Gtk::Label>(text);
-
-            box->append(*icon);
-            box->append(*label);
-
-            button->set_child(*box);
-
-            row->set_child(*button);
-            m_sidebar.append(*row);
+            Button btn(text, "/org/kyrene/assets/icons/game-icon.svg", []() {});
+            m_sidebar.append(*btn.getWidget());
         }
 
         m_content.set_label("Content Area");
