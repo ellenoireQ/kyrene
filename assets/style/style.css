@@ -31,3 +31,7 @@
 .ky-sidebar-btn::selection{
     background-color: transparent;
 }
+
+.ky-m-content{
+    margin: 10px;
+}

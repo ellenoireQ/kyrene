@@ -29,8 +29,18 @@ public:
             m_sidebar.append(*btn.getWidget());
         }
 
-        m_content.set_label("Content Area");
+        Gtk::Label lbl;
+        Gtk::Label lbl2;
+        Gtk::Grid grid;
 
+        grid.add_css_class("ky-m-content");
+        lbl.set_label("Content Area");
+        lbl2.set_label("Content Area");
+
+        grid.attach(lbl, 0, 0);
+        grid.attach(lbl2, 1, 0);
+
+        m_content.append(grid);
         m_box.append(m_sidebar);
         m_box.append(m_content);
 
@@ -40,13 +50,7 @@ public:
 private:
     Gtk::Box m_box{Gtk::Orientation::HORIZONTAL};
     Gtk::ListBox m_sidebar;
-    Gtk::Label m_content;
-
-    void on_button_clicked(const std::string &label)
-    {
-        std::cout << label << " clicked\n";
-        m_content.set_text(label);
-    }
+    Gtk::Box m_content{Gtk::Orientation::VERTICAL};
 
     /*
      *   Sidebar item
