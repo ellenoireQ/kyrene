@@ -30,7 +30,7 @@ public:
         button->set_child(*box);
         if (style.has_value())
         {
-            button->add_css_class("button");
+            button->add_css_class(style.value());
         }
         row->set_child(*button);
     }
