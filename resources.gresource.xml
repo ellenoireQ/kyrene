@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/kyrene">
+    <file>assets/icons/game-icon.svg</file>
+    <file>assets/icons/perf-icon.svg</file>
+    <file>assets/icons/setting-icon.svg</file>
+  </gresource>
+</gresources>
