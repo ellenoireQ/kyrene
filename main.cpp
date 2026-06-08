@@ -2,6 +2,13 @@
 #include <iostream>
 #include <class/Button.hpp>
 
+struct ButtonData
+{
+    std::string label;
+    const char *icon;
+    std::function<void()> onClick;
+};
+
 class KyreneWindow : public Gtk::Window
 {
 public:
@@ -14,15 +21,9 @@ public:
 
         m_sidebar.set_size_request(200, -1);
 
-        std::vector<std::string> items = {
-            "Library",
-            "Performance",
-            "Settings",
-        };
-
-        for (const auto &text : items)
+        for (const auto &si : sidebar_items)
         {
-            Button btn(text, "/org/kyrene/assets/icons/game-icon.svg", []() {});
+            Button btn(si.label, si.icon, si.onClick);
             m_sidebar.append(*btn.getWidget());
         }
 
@@ -44,6 +45,36 @@ private:
         std::cout << label << " clicked\n";
         m_content.set_text(label);
     }
+
+    /*
+     *   Sidebar item
+     */
+    std::vector<ButtonData> sidebar_items{
+        ButtonData{
+            .label = "Library",
+            .icon = "/org/kyrene/assets/icons/game-icon.svg",
+            .onClick = [this]()
+            {
+                //
+            },
+        },
+        ButtonData{
+            .label = "Performance",
+            .icon = "/org/kyrene/assets/icons/perf-icon.svg",
+            .onClick = [this]()
+            {
+                //
+            },
+        },
+        ButtonData{
+            .label = "Settings",
+            .icon = "/org/kyrene/assets/icons/setting-icon.svg",
+            .onClick = [this]()
+            {
+                //
+            },
+        },
+    };
 };
 
 int main(int argc, char *argv[])
