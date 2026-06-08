@@ -11,6 +11,8 @@ public:
     {
         row = Gtk::make_managed<Gtk::ListBoxRow>();
         button = Gtk::make_managed<Gtk::Button>();
+        button->set_hexpand(true);
+        button->set_halign(Gtk::Align::FILL);
 
         if (onClick)
         {
@@ -18,11 +20,15 @@ public:
         }
 
         auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 8);
+        box->set_hexpand(true);
+        box->set_halign(Gtk::Align::FILL);
 
         auto iconWidget = Gtk::make_managed<Gtk::Image>();
         iconWidget->set_from_resource(iconPath);
 
         auto labelWidget = Gtk::make_managed<Gtk::Label>(labelText);
+        labelWidget->set_hexpand(true);
+        labelWidget->set_halign(Gtk::Align::START);
 
         box->append(*iconWidget);
         box->append(*labelWidget);
@@ -30,7 +36,7 @@ public:
         button->set_child(*box);
         if (style.has_value())
         {
-            button->add_css_class(style.value());
+            row->add_css_class(style.value());
         }
         row->set_child(*button);
     }
