@@ -25,7 +25,7 @@ public:
 
         for (const auto &si : sidebar_items)
         {
-            Button btn(si.label, si.icon, si.onClick, std::nullopt);
+            Button btn(si.label, si.icon, si.onClick, "ky-sidebar-btn");
             m_sidebar.append(*btn.getWidget());
         }
 
