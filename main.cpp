@@ -2,10 +2,10 @@
 #include <iostream>
 #include <class/Button.hpp>
 
-class MyWindow : public Gtk::Window
+class KyreneWindow : public Gtk::Window
 {
 public:
-    MyWindow()
+    KyreneWindow()
     {
         set_title("Kyrene");
         set_default_size(800, 500);
@@ -49,5 +49,5 @@ private:
 int main(int argc, char *argv[])
 {
     auto app = Gtk::Application::create("org.kyrene.linuz");
-    return app->make_window_and_run<MyWindow>(argc, argv);
+    return app->make_window_and_run<KyreneWindow>(argc, argv);
 }
