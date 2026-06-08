@@ -4,5 +4,6 @@
     <file>assets/icons/game-icon.svg</file>
     <file>assets/icons/perf-icon.svg</file>
     <file>assets/icons/setting-icon.svg</file>
+    <file>assets/style/style.css</file>
   </gresource>
 </gresources>

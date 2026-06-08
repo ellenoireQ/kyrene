@@ -1,0 +1,25 @@
+.button{
+    background-color: transparent;
+}
+
+.button:hover{
+    background-color: #cccccc;
+    border: solid 0px transparent;
+    border-radius: 10px;
+}
+
+.button::selection{
+    background-color: transparent;
+}
+
+.ky-sidebar{
+    padding-top: 5%;
+    padding: 5px;
+}
+
+.ky-sidebar row:selected {
+    background-color: #cccccc;
+    border: solid 0px transparent;
+    border-radius: 10px;
+    color: inherit; 
+}

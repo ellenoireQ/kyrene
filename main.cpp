@@ -16,14 +16,16 @@ public:
     {
         set_title("Kyrene");
         set_default_size(800, 500);
+        load_css();
 
         m_box.set_orientation(Gtk::Orientation::HORIZONTAL);
 
         m_sidebar.set_size_request(200, -1);
+        m_sidebar.add_css_class("ky-sidebar");
 
         for (const auto &si : sidebar_items)
         {
-            Button btn(si.label, si.icon, si.onClick);
+            Button btn(si.label, si.icon, si.onClick, std::nullopt);
             m_sidebar.append(*btn.getWidget());
         }
 
@@ -75,6 +77,26 @@ private:
             },
         },
     };
+
+    void load_css()
+    {
+        auto css_provider = Gtk::CssProvider::create();
+
+        try
+        {
+            css_provider->load_from_resource("/org/kyrene/assets/style/style.css");
+        }
+        catch (const Gtk::CssParserError &ex)
+        {
+            std::cerr << "CSS parsing error: " << ex.what() << std::endl;
+            return;
+        }
+
+        Gtk::StyleContext::add_provider_for_display(
+            Gdk::Display::get_default(),
+            css_provider,
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
 };
 
 int main(int argc, char *argv[])

@@ -7,7 +7,7 @@ protected:
     Gtk::ListBoxRow *row;
 
 public:
-    Button(std::string labelText, const char *iconPath, std::function<void()> onClick)
+    Button(std::string labelText, const char *iconPath, std::function<void()> onClick, std::optional<std::string> style)
     {
         row = Gtk::make_managed<Gtk::ListBoxRow>();
         button = Gtk::make_managed<Gtk::Button>();
@@ -28,6 +28,10 @@ public:
         box->append(*labelWidget);
 
         button->set_child(*box);
+        if (style.has_value())
+        {
+            button->add_css_class("button");
+        }
         row->set_child(*button);
     }
 
