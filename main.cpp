@@ -21,6 +21,10 @@ public:
 
         m_box.set_orientation(Gtk::Orientation::HORIZONTAL);
 
+        m_scrolled_window.set_child(m_content);
+
+        m_scrolled_window.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
+
         m_sidebar.set_size_request(200, -1);
         m_sidebar.add_css_class("ky-sidebar");
 
@@ -76,7 +80,7 @@ public:
 
         m_content.append(grid);
         m_box.append(m_sidebar);
-        m_box.append(m_content);
+        m_box.append(m_scrolled_window);
 
         set_child(m_box);
     }
@@ -86,6 +90,7 @@ private:
     Gtk::ListBox m_sidebar;
     Gtk::Box m_content{Gtk::Orientation::VERTICAL};
     Gtk::Grid grid;
+    Gtk::ScrolledWindow m_scrolled_window;
 
     /*
      *   Sidebar item
