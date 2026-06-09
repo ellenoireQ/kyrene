@@ -2,6 +2,7 @@
 #include <iostream>
 #include <class/Button.hpp>
 #include <class/Card.hpp>
+#include <utils/JsonParser.hpp>
 
 struct ButtonData
 {
@@ -34,40 +35,24 @@ public:
             m_sidebar.append(*btn.getWidget());
         }
 
-        grid.add_css_class("ky-m-content");
+        grid_box.add_css_class("ky-m-content");
+        grid_box.set_spacing(12);
 
-        grid.set_row_spacing(12);
-        grid.set_column_spacing(12);
-
-        struct CardData
-        {
-            std::string title;
-            std::string body;
-            const char *icon;
-            std::optional<std::string> style;
-        };
-
-        std::vector<CardData> data{
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::nullopt},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
-        };
+        const auto data = load_cards_from_json();
 
         const int cols = 2;
+        Gtk::Box *current_row = nullptr;
         for (size_t i = 0; i < data.size(); ++i)
         {
-            int row = i / cols;
             int col = i % cols;
 
+            if (col == 0)
+            {
+                current_row = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 12);
+            }
+
             std::optional<std::string> btnLabel = std::optional<std::string>("Open");
-            Card card(data[i].icon, data[i].title, data[i].body, btnLabel, data[i].style);
+            Card card(data[i].imagePath, data[i].title, data[i].description, btnLabel, data[i].style);
 
             if (auto btn = card.getActionButton())
             {
@@ -75,10 +60,16 @@ public:
                                               { std::cout << "Clicked: " << title << std::endl; });
             }
 
-            grid.attach(*card.getWidget(), col, row);
+            current_row->append(*card.getWidget());
+
+            if (col == cols - 1 || i + 1 == data.size())
+            {
+                grid_box.append(*current_row);
+                current_row = nullptr;
+            }
         }
 
-        m_content.append(grid);
+        m_content.append(grid_box);
         m_box.append(m_sidebar);
         m_box.append(m_scrolled_window);
 
@@ -86,10 +77,18 @@ public:
     }
 
 private:
+    struct CardData
+    {
+        std::string title;
+        std::string description;
+        const char *imagePath;
+        std::optional<std::string> style;
+    };
+
     Gtk::Box m_box{Gtk::Orientation::HORIZONTAL};
     Gtk::ListBox m_sidebar;
     Gtk::Box m_content{Gtk::Orientation::VERTICAL};
-    Gtk::Grid grid;
+    Gtk::Box grid_box{Gtk::Orientation::VERTICAL};
     Gtk::ScrolledWindow m_scrolled_window;
 
     /*
@@ -121,6 +120,76 @@ private:
             },
         },
     };
+
+    std::vector<CardData> load_cards_from_json()
+    {
+        const std::vector<std::string> candidatePaths{
+            "assets/allgame.json",
+            "../assets/allgame.json",
+        };
+
+        std::string errorMessage;
+        std::optional<kyrene::utils::JsonParser::Json> json;
+
+        for (const auto &candidate : candidatePaths)
+        {
+            json = kyrene::utils::JsonParser::tryParseFile(candidate, &errorMessage);
+            if (json.has_value())
+            {
+                break;
+            }
+        }
+
+        if (!json.has_value())
+        {
+            std::cerr << "Failed to read allgame.json: " << errorMessage << std::endl;
+            return {
+                {"Fallback Game", "JSON file could not be loaded.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            };
+        }
+
+        if (!json->is_object() ||
+            !json->contains("applist") ||
+            !(*json)["applist"].is_object() ||
+            !(*json)["applist"].contains("apps") ||
+            !(*json)["applist"]["apps"].is_array())
+        {
+            std::cerr << "Invalid JSON structure in allgame.json: expected applist.apps array" << std::endl;
+            return {
+                {"Fallback Game", "JSON structure is invalid.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            };
+        }
+
+        std::vector<CardData> cards;
+        const auto &apps = (*json)["applist"]["apps"];
+        constexpr std::size_t maxInitialCards = 200;
+
+        if (apps.size() > maxInitialCards)
+        {
+            std::cerr << "allgame.json contains " << apps.size()
+                      << " entries; loading only the first " << maxInitialCards
+                      << " to avoid high memory usage at startup" << std::endl;
+        }
+
+        cards.reserve(std::min(apps.size(), maxInitialCards));
+
+        for (std::size_t i = 0; i < apps.size() && i < maxInitialCards; ++i)
+        {
+            const auto &app = apps[i];
+            const auto appId = app.value("appid", 0);
+            const auto name = app.value("name", std::string{});
+            const auto title = name.empty() ? ("App " + std::to_string(appId)) : name;
+
+            cards.push_back(CardData{
+                .title = title,
+                .description = "" + std::to_string(appId),
+                .imagePath = "/org/kyrene/assets/bg/image.png",
+                .style = "ky-card",
+            });
+        }
+
+        return cards;
+    }
 
     void load_css()
     {
