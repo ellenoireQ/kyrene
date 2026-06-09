@@ -6,9 +6,17 @@ project('kyrene', 'cpp',
   ])
 
 class_dir = include_directories('class')
+utils_dir = include_directories('utils')
 
 class_dep = declare_dependency(
   include_directories: class_dir
+)
+
+nlohmann_dep = dependency('nlohmann_json', required : true)
+
+utils_dep = declare_dependency(
+  include_directories: utils_dir,
+  dependencies: [nlohmann_dep]
 )
 
 gtkmm_dep = dependency('gtkmm-4.0')
@@ -21,5 +29,5 @@ resources = gnome.compile_resources('kyrene-resources',
 
 executable('kyrene',
   ['main.cpp', resources],
-  dependencies : [gtkmm_dep, class_dep]
+  dependencies : [gtkmm_dep, class_dep, utils_dep]
 )
