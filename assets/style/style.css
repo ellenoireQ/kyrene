@@ -35,3 +35,26 @@
 .ky-m-content{
     margin: 10px;
 }
+
+.ky-card {
+    border-radius: 14px;
+    background-color: #f7f7f7;
+    border: 1px solid #d8d8d8;
+    min-width: 220px;
+    min-height: 160px;
+    overflow: hidden;
+}
+
+.ky-card-image {
+    margin-bottom: 0;
+}
+
+.ky-card-body {
+    padding: 14px;
+    opacity: 0.85;
+}
+
+.ky-card-header { margin-bottom: 6px; }
+.ky-card-title { font-weight: 700; }
+.ky-card-content { margin-top: 8px; }
+.ky-card-desc { color: #333333; margin-top: 6px; }

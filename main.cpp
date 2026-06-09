@@ -1,6 +1,7 @@
 #include <gtkmm.h>
 #include <iostream>
 #include <class/Button.hpp>
+#include <class/Card.hpp>
 
 struct ButtonData
 {
@@ -29,16 +30,49 @@ public:
             m_sidebar.append(*btn.getWidget());
         }
 
-        Gtk::Label lbl;
-        Gtk::Label lbl2;
-        Gtk::Grid grid;
-
         grid.add_css_class("ky-m-content");
-        lbl.set_label("Content Area");
-        lbl2.set_label("Content Area");
 
-        grid.attach(lbl, 0, 0);
-        grid.attach(lbl2, 1, 0);
+        grid.set_row_spacing(12);
+        grid.set_column_spacing(12);
+
+        struct CardData
+        {
+            std::string title;
+            std::string body;
+            const char *icon;
+            std::optional<std::string> style;
+        };
+
+        std::vector<CardData> data{
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::nullopt},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+            {"CSGO 2", "lorem ipsum dolor sit amet.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
+        };
+
+        const int cols = 2;
+        for (size_t i = 0; i < data.size(); ++i)
+        {
+            int row = i / cols;
+            int col = i % cols;
+
+            std::optional<std::string> btnLabel = std::optional<std::string>("Open");
+            Card card(data[i].icon, data[i].title, data[i].body, btnLabel, data[i].style);
+
+            if (auto btn = card.getActionButton())
+            {
+                btn->signal_clicked().connect([title = data[i].title]()
+                                              { std::cout << "Clicked: " << title << std::endl; });
+            }
+
+            grid.attach(*card.getWidget(), col, row);
+        }
 
         m_content.append(grid);
         m_box.append(m_sidebar);
@@ -51,6 +85,7 @@ private:
     Gtk::Box m_box{Gtk::Orientation::HORIZONTAL};
     Gtk::ListBox m_sidebar;
     Gtk::Box m_content{Gtk::Orientation::VERTICAL};
+    Gtk::Grid grid;
 
     /*
      *   Sidebar item
