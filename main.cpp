@@ -20,14 +20,54 @@ public:
         set_default_size(800, 500);
         load_css();
 
+        auto header = Gtk::make_managed<Gtk::HeaderBar>();
+        auto menu_btn = Gtk::make_managed<Gtk::Button>();
+        auto menu_img = Gtk::make_managed<Gtk::Image>();
+        menu_img->set_from_icon_name("open-menu-symbolic");
+        menu_btn->set_child(*menu_img);
+        menu_btn->signal_clicked().connect([this]()
+                                           { m_sidebar.set_visible(!m_sidebar.is_visible()); });
+
+        auto title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 6);
+        auto title_lbl = Gtk::make_managed<Gtk::Label>("Kyrene");
+        title_lbl->set_hexpand(true);
+        title_lbl->set_halign(Gtk::Align::START);
+        menu_btn->set_halign(Gtk::Align::END);
+        title_box->append(*title_lbl);
+        title_box->append(*menu_btn);
+        header->set_title_widget(*title_box);
+        header->set_show_title_buttons(true);
+        set_titlebar(*header);
+
         m_box.set_orientation(Gtk::Orientation::HORIZONTAL);
 
-        m_scrolled_window.set_child(m_content);
+        setup_library_page();
+        setup_performance_page();
+        setup_settings_page();
 
-        m_scrolled_window.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
+        m_stack.add(m_library_page, "library", "Library");
+        m_stack.add(m_perf_page, "performance", "Performance");
+        m_stack.add(m_settings_page, "settings", "Settings");
+
+        m_scrolled_window.set_child(m_stack);
+        m_scrolled_window.set_policy(
+            Gtk::PolicyType::AUTOMATIC,
+            Gtk::PolicyType::AUTOMATIC);
 
         m_sidebar.set_size_request(200, -1);
         m_sidebar.add_css_class("ky-sidebar");
+
+        std::vector<ButtonData> sidebar_items{
+            {"Library", "/org/kyrene/assets/icons/game-icon.svg",
+             [this]()
+             { m_stack.set_visible_child("library"); }},
+            {"Performance", "/org/kyrene/assets/icons/perf-icon.svg",
+             [this]()
+             { m_stack.set_visible_child("performance"); }},
+            {"Settings", "/org/kyrene/assets/icons/setting-icon.svg",
+             [this]()
+             { m_stack.set_visible_child("settings"); }},
+        };
 
         for (const auto &si : sidebar_items)
         {
@@ -35,45 +75,11 @@ public:
             m_sidebar.append(*btn.getWidget());
         }
 
-        grid_box.add_css_class("ky-m-content");
-        grid_box.set_spacing(12);
-
-        const auto data = load_cards_from_json();
-
-        const int cols = 2;
-        Gtk::Box *current_row = nullptr;
-        for (size_t i = 0; i < data.size(); ++i)
-        {
-            int col = i % cols;
-
-            if (col == 0)
-            {
-                current_row = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 12);
-            }
-
-            std::optional<std::string> btnLabel = std::optional<std::string>("Open");
-            Card card(data[i].imagePath, data[i].title, data[i].description, btnLabel, data[i].style);
-
-            if (auto btn = card.getActionButton())
-            {
-                btn->signal_clicked().connect([title = data[i].title]()
-                                              { std::cout << "Clicked: " << title << std::endl; });
-            }
-
-            current_row->append(*card.getWidget());
-
-            if (col == cols - 1 || i + 1 == data.size())
-            {
-                grid_box.append(*current_row);
-                current_row = nullptr;
-            }
-        }
-
-        m_content.append(grid_box);
         m_box.append(m_sidebar);
         m_box.append(m_scrolled_window);
-
         set_child(m_box);
+
+        m_stack.set_visible_child("library");
     }
 
 private:
@@ -84,43 +90,84 @@ private:
         const char *imagePath;
         std::optional<std::string> style;
     };
-
     Gtk::Box m_box{Gtk::Orientation::HORIZONTAL};
     Gtk::ListBox m_sidebar;
-    Gtk::Box m_content{Gtk::Orientation::VERTICAL};
-    Gtk::Box grid_box{Gtk::Orientation::VERTICAL};
     Gtk::ScrolledWindow m_scrolled_window;
+    Gtk::Stack m_stack;
 
-    /*
-     *   Sidebar item
-     */
-    std::vector<ButtonData> sidebar_items{
-        ButtonData{
-            .label = "Library",
-            .icon = "/org/kyrene/assets/icons/game-icon.svg",
-            .onClick = [this]()
-            {
-                //
-            },
-        },
-        ButtonData{
-            .label = "Performance",
-            .icon = "/org/kyrene/assets/icons/perf-icon.svg",
-            .onClick = [this]()
-            {
-                //
-            },
-        },
-        ButtonData{
-            .label = "Settings",
-            .icon = "/org/kyrene/assets/icons/setting-icon.svg",
-            .onClick = [this]()
-            {
-                //
-            },
-        },
-    };
+    Gtk::Box m_library_page{Gtk::Orientation::VERTICAL};
+    Gtk::Box m_perf_page{Gtk::Orientation::VERTICAL};
+    Gtk::Box m_settings_page{Gtk::Orientation::VERTICAL};
 
+    void setup_library_page()
+    {
+        auto &grid_box = *Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
+        grid_box.add_css_class("ky-m-content");
+        grid_box.set_spacing(12);
+
+        const auto data = load_cards_from_json();
+        const int cols = 2;
+        Gtk::Box *current_row = nullptr;
+
+        for (size_t i = 0; i < data.size(); ++i)
+        {
+            if (i % cols == 0)
+                current_row = Gtk::make_managed<Gtk::Box>(
+                    Gtk::Orientation::HORIZONTAL, 12);
+
+            Card card(data[i].imagePath, data[i].title,
+                      data[i].description,
+                      std::optional<std::string>("Open"),
+                      data[i].style);
+
+            if (auto btn = card.getActionButton())
+                btn->signal_clicked().connect(
+                    [title = data[i].title]()
+                    { std::cout << "Clicked: " << title << std::endl; });
+
+            current_row->append(*card.getWidget());
+
+            if (i % cols == cols - 1 || i + 1 == data.size())
+            {
+                grid_box.append(*current_row);
+                current_row = nullptr;
+            }
+        }
+
+        m_library_page.append(grid_box);
+    }
+
+    void setup_performance_page()
+    {
+        auto *lbl = Gtk::make_managed<Gtk::Label>("Performance Page");
+        m_perf_page.append(*lbl);
+    }
+
+    void setup_settings_page()
+    {
+        auto *lbl = Gtk::make_managed<Gtk::Label>("Settings Page");
+        m_settings_page.append(*lbl);
+    }
+
+    void load_css()
+    {
+        auto css_provider = Gtk::CssProvider::create();
+
+        try
+        {
+            css_provider->load_from_resource("/org/kyrene/assets/style/style.css");
+        }
+        catch (const Gtk::CssParserError &ex)
+        {
+            std::cerr << "CSS parsing error: " << ex.what() << std::endl;
+            return;
+        }
+
+        Gtk::StyleContext::add_provider_for_display(
+            Gdk::Display::get_default(),
+            css_provider,
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
     std::vector<CardData> load_cards_from_json()
     {
         const std::vector<std::string> candidatePaths{
@@ -189,26 +236,6 @@ private:
         }
 
         return cards;
-    }
-
-    void load_css()
-    {
-        auto css_provider = Gtk::CssProvider::create();
-
-        try
-        {
-            css_provider->load_from_resource("/org/kyrene/assets/style/style.css");
-        }
-        catch (const Gtk::CssParserError &ex)
-        {
-            std::cerr << "CSS parsing error: " << ex.what() << std::endl;
-            return;
-        }
-
-        Gtk::StyleContext::add_provider_for_display(
-            Gdk::Display::get_default(),
-            css_provider,
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
 };
 
