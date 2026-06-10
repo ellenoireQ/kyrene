@@ -5,6 +5,7 @@
 #include <class/Card.hpp>
 #include <class/Toggle.hpp>
 #include <utils/JsonParser.hpp>
+#include <format>
 
 struct ButtonData
 {
@@ -158,12 +159,16 @@ private:
         m_perf_page.append(*header);
 
         auto *container = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
-        container->add_css_class("ky-card");
         container->set_spacing(8);
 
-        m_toggles.push_back(std::make_unique<Toggle>("Enable Overlay", false, [](bool active)
-                                                     { std::cout << "Overlay: " << (active ? "ON" : "OFF") << std::endl; }));
-        container->append(*m_toggles.back()->getWidget());
+        for (int i = 0; i <= 10; i++)
+        {
+            auto num = std::format("Enable overlay {}", i);
+            m_toggles.push_back(std::make_unique<Toggle>(num, false, [](bool active)
+                                                         { std::cout << "Overlay: " << (active ? "ON" : "OFF") << std::endl; }, "ky-card-toggle"));
+
+            container->append(*m_toggles.back()->getWidget());
+        }
 
         m_perf_page.append(*container);
     }
