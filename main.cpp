@@ -1,7 +1,9 @@
 #include <gtkmm.h>
 #include <iostream>
+#include <memory>
 #include <class/Button.hpp>
 #include <class/Card.hpp>
+#include <class/Toggle.hpp>
 #include <utils/JsonParser.hpp>
 
 struct ButtonData
@@ -102,6 +104,8 @@ private:
     Gtk::Box m_perf_page{Gtk::Orientation::VERTICAL};
     Gtk::Box m_settings_page{Gtk::Orientation::VERTICAL};
 
+    std::vector<std::unique_ptr<Toggle>> m_toggles;
+
     void setup_library_page()
     {
         auto &grid_box = *Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
@@ -145,8 +149,23 @@ private:
 
     void setup_performance_page()
     {
-        auto *lbl = Gtk::make_managed<Gtk::Label>("Performance Page");
-        m_perf_page.append(*lbl);
+        m_perf_page.set_spacing(16);
+        m_perf_page.add_css_class("ky-m-content");
+
+        auto *header = Gtk::make_managed<Gtk::Label>("Performance Page");
+        header->add_css_class("title");
+        header->set_halign(Gtk::Align::START);
+        m_perf_page.append(*header);
+
+        auto *container = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
+        container->add_css_class("ky-card");
+        container->set_spacing(8);
+
+        m_toggles.push_back(std::make_unique<Toggle>("Enable Overlay", false, [](bool active)
+                                                     { std::cout << "Overlay: " << (active ? "ON" : "OFF") << std::endl; }));
+        container->append(*m_toggles.back()->getWidget());
+
+        m_perf_page.append(*container);
     }
 
     void setup_settings_page()
