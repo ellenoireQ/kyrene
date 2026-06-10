@@ -20,9 +20,9 @@ public:
 
         auto m_outer = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 0);
 
-        m_root = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 8);
-        m_header = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 6);
-        m_content = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 6);
+        m_root = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 10);
+        m_header = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 8);
+        m_content = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 8);
         m_image = nullptr;
         m_title = nullptr;
         m_desc = nullptr;
@@ -32,10 +32,10 @@ public:
         frame->add_css_class("ky-card");
         frame->set_halign(Gtk::Align::FILL);
         frame->set_hexpand(true);
-        frame->set_margin_start(8);
-        frame->set_margin_end(8);
-        frame->set_margin_top(8);
-        frame->set_margin_bottom(8);
+        frame->set_margin_start(6);
+        frame->set_margin_end(6);
+        frame->set_margin_top(6);
+        frame->set_margin_bottom(6);
         m_header->add_css_class("ky-card-header");
         m_content->add_css_class("ky-card-content");
 
@@ -47,7 +47,7 @@ public:
             m_image->set_halign(Gtk::Align::FILL);
             m_image->set_content_fit(Gtk::ContentFit::COVER);
             m_image->set_can_shrink(true);
-            m_image->set_size_request(-1, 180);
+            m_image->set_size_request(-1, 200);
             m_image->add_css_class("ky-card-image");
 
             m_outer->append(*m_image);
@@ -58,6 +58,8 @@ public:
 
         m_title = Gtk::make_managed<Gtk::Label>(titleText);
         m_title->set_halign(Gtk::Align::START);
+        m_title->set_ellipsize(Pango::EllipsizeMode::END);
+        m_title->set_max_width_chars(25);
         m_title->add_css_class("ky-card-title");
         m_root->append(*m_title);
 
@@ -66,6 +68,9 @@ public:
             m_desc = Gtk::make_managed<Gtk::Label>(bodyText.value());
             m_desc->set_wrap(true);
             m_desc->set_halign(Gtk::Align::START);
+            m_desc->set_max_width_chars(30);
+            m_desc->set_lines(2);
+            m_desc->set_ellipsize(Pango::EllipsizeMode::END);
             m_desc->add_css_class("ky-card-desc");
             m_root->append(*m_desc);
         }
@@ -77,10 +82,8 @@ public:
         {
             m_action_button = Gtk::make_managed<Gtk::Button>(buttonLabel.value());
             m_action_button->add_css_class("ky-card-action");
-            auto btn_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-            btn_box->set_halign(Gtk::Align::END);
-            btn_box->append(*m_action_button);
-            m_root->append(*btn_box);
+            m_action_button->set_halign(Gtk::Align::END);
+            m_root->append(*m_action_button);
         }
 
         if (style.has_value())

@@ -17,7 +17,7 @@ public:
     KyreneWindow()
     {
         set_title("Kyrene");
-        set_default_size(800, 500);
+        set_default_size(1000, 650);
         load_css();
 
         auto header = Gtk::make_managed<Gtk::HeaderBar>();
@@ -25,13 +25,15 @@ public:
         auto menu_img = Gtk::make_managed<Gtk::Image>();
         menu_img->set_from_icon_name("open-menu-symbolic");
         menu_btn->set_child(*menu_img);
+        menu_btn->add_css_class("flat");
         menu_btn->signal_clicked().connect([this]()
                                            { m_sidebar.set_visible(!m_sidebar.is_visible()); });
 
-        auto title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 6);
+        auto title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 10);
         auto title_lbl = Gtk::make_managed<Gtk::Label>("Kyrene");
         title_lbl->set_hexpand(true);
         title_lbl->set_halign(Gtk::Align::START);
+        title_lbl->add_css_class("title");
         menu_btn->set_halign(Gtk::Align::END);
         title_box->append(*title_lbl);
         title_box->append(*menu_btn);
@@ -51,11 +53,12 @@ public:
 
         m_scrolled_window.set_child(m_stack);
         m_scrolled_window.set_policy(
-            Gtk::PolicyType::AUTOMATIC,
+            Gtk::PolicyType::NEVER,
             Gtk::PolicyType::AUTOMATIC);
 
-        m_sidebar.set_size_request(200, -1);
+        m_sidebar.set_size_request(220, -1);
         m_sidebar.add_css_class("ky-sidebar");
+        m_sidebar.set_selection_mode(Gtk::SelectionMode::SINGLE);
 
         std::vector<ButtonData> sidebar_items{
             {"Library", "/org/kyrene/assets/icons/game-icon.svg",
@@ -103,7 +106,7 @@ private:
     {
         auto &grid_box = *Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
         grid_box.add_css_class("ky-m-content");
-        grid_box.set_spacing(12);
+        grid_box.set_spacing(16);
 
         const auto data = load_cards_from_json();
         const int cols = 2;
@@ -112,8 +115,11 @@ private:
         for (size_t i = 0; i < data.size(); ++i)
         {
             if (i % cols == 0)
+            {
                 current_row = Gtk::make_managed<Gtk::Box>(
-                    Gtk::Orientation::HORIZONTAL, 12);
+                    Gtk::Orientation::HORIZONTAL, 16);
+                current_row->set_homogeneous(true);
+            }
 
             Card card(data[i].imagePath, data[i].title,
                       data[i].description,
