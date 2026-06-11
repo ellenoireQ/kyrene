@@ -168,10 +168,38 @@ headerbar button:hover {
     background-color: var(--bg-hover);
 }
 
-.ky-card-toggle{
+.ky-card-toggles-container {
     background-color: var(--bg-elevated);
-    color: white;
-    padding: 10px;
-    border: 1px solid transparent;
+    border: 1px solid var(--border-primary);
     border-radius: 10px;
+    spacing: 0;
+    padding: 0;
+}
+
+.ky-card-toggle {
+    background-color: transparent;
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: 0;
+    margin: 0;
+}
+
+.ky-card-toggle:first-child {
+    border-radius: 10px 10px 0 0;
+}
+
+.ky-card-toggle:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.ky-card-toggle:hover {
+    background-color: transparent;
+}
+
+.ky-card-toggle-separator {
+    min-height: 1px;
+    background-color: var(--bg-primary);
+    margin: 0;
+    padding: 0;
+    opacity: 0.5;
 }

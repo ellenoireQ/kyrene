@@ -159,7 +159,9 @@ private:
         m_perf_page.append(*header);
 
         auto *container = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
-        container->set_spacing(8);
+        container->set_spacing(0);
+        container->set_homogeneous(false);
+        container->add_css_class("ky-card-toggles-container");
 
         for (int i = 0; i <= 10; i++)
         {
@@ -168,6 +170,17 @@ private:
                                                          { std::cout << "Overlay: " << (active ? "ON" : "OFF") << std::endl; }, "ky-card-toggle"));
 
             container->append(*m_toggles.back()->getWidget());
+
+            if (i < 10)
+            {
+                auto sep = Gtk::make_managed<Gtk::Separator>(
+                    Gtk::Orientation::HORIZONTAL);
+
+                sep->add_css_class("ky-card-toggle-separator");
+                sep->set_hexpand(true);
+                sep->set_halign(Gtk::Align::FILL);
+                container->append(*sep);
+            }
         }
 
         m_perf_page.append(*container);
