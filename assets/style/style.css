@@ -158,16 +158,6 @@ headerbar {
     color: var(--text-secondary);
 }
 
-headerbar button {
-    border-radius: 8px;
-    background-color: var(--bg-elevated);
-    color: var(--text-secondary);
-}
-
-headerbar button:hover {
-    background-color: var(--bg-hover);
-}
-
 .ky-card-toggles-container {
     background-color: var(--bg-elevated);
     border: 1px solid var(--border-primary);

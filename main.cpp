@@ -28,7 +28,6 @@ public:
         auto menu_img = Gtk::make_managed<Gtk::Image>();
         menu_img->set_from_icon_name("open-menu-symbolic");
         menu_btn->set_child(*menu_img);
-        menu_btn->add_css_class("flat");
         menu_btn->signal_clicked().connect([this]()
                                            { m_sidebar.set_visible(!m_sidebar.is_visible()); });
 
@@ -36,7 +35,6 @@ public:
         auto title_lbl = Gtk::make_managed<Gtk::Label>("Kyrene");
         title_lbl->set_hexpand(true);
         title_lbl->set_halign(Gtk::Align::START);
-        title_lbl->add_css_class("title");
         menu_btn->set_halign(Gtk::Align::END);
         title_box->append(*title_lbl);
         title_box->append(*menu_btn);
