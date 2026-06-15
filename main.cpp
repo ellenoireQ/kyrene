@@ -1,6 +1,7 @@
 #include <gtkmm.h>
 #include <iostream>
 #include <memory>
+#include <variant>
 #include <class/Button.hpp>
 #include <class/Card.hpp>
 #include <class/Toggle.hpp>
@@ -34,6 +35,7 @@ public:
         load_css();
 
         auto header = Gtk::make_managed<Gtk::HeaderBar>();
+
         auto menu_btn = Gtk::make_managed<Gtk::Button>();
         auto menu_img = Gtk::make_managed<Gtk::Image>();
         menu_img->set_from_icon_name("open-menu-symbolic");
@@ -41,13 +43,24 @@ public:
         menu_btn->signal_clicked().connect([this]()
                                            { m_sidebar.set_visible(!m_sidebar.is_visible()); });
 
+        auto settings_btn = Gtk::make_managed<Gtk::Button>();
+        auto settings_img = Gtk::make_managed<Gtk::Image>();
+        settings_img->set_from_icon_name("preferences-system-symbolic");
+        settings_btn->set_child(*settings_img);
+        settings_btn->signal_clicked().connect([this]()
+                                               { m_stack.set_visible_child("settings"); });
+
         auto title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 10);
         auto title_lbl = Gtk::make_managed<Gtk::Label>("Kyrene");
         title_lbl->set_hexpand(true);
         title_lbl->set_halign(Gtk::Align::START);
+        settings_btn->set_halign(Gtk::Align::END);
         menu_btn->set_halign(Gtk::Align::END);
+
         title_box->append(*title_lbl);
+        title_box->append(*settings_btn);
         title_box->append(*menu_btn);
+
         header->set_title_widget(*title_box);
         header->set_show_title_buttons(true);
         set_titlebar(*header);
@@ -107,6 +120,7 @@ public:
 private:
     AppConfig cfg;
     CPUMon cpumon{cfg};
+
     struct CardData
     {
         std::string title;
@@ -114,6 +128,31 @@ private:
         const char *imagePath;
         std::optional<std::string> style;
     };
+
+    struct SettingToggle
+    {
+        std::string label;
+        bool defaultValue;
+        std::function<void(bool)> onChange;
+    };
+
+    struct SettingButton
+    {
+        std::string label;
+        std::string buttonText;
+        std::function<void()> onClick;
+    };
+
+    struct SettingInput
+    {
+        std::string label;
+        std::string placeholder;
+        std::string defaultValue;
+        std::function<void(const std::string &)> onChange;
+    };
+
+    using SettingItem = std::variant<SettingToggle, SettingButton, SettingInput>;
+
     Gtk::Box m_box{Gtk::Orientation::HORIZONTAL};
     Gtk::ListBox m_sidebar;
     Gtk::ScrolledWindow m_scrolled_window;
@@ -124,6 +163,7 @@ private:
     Gtk::Box m_settings_page{Gtk::Orientation::VERTICAL};
 
     std::vector<std::unique_ptr<Toggle>> m_toggles;
+    std::vector<std::unique_ptr<Toggle>> m_settings_toggles;
 
     void setup_library_page()
     {
@@ -206,8 +246,117 @@ private:
 
     void setup_settings_page()
     {
-        auto *lbl = Gtk::make_managed<Gtk::Label>("Settings Page");
-        m_settings_page.append(*lbl);
+        m_settings_page.set_spacing(16);
+        m_settings_page.add_css_class("ky-m-content");
+
+        auto *header = Gtk::make_managed<Gtk::Label>("Settings");
+        header->add_css_class("title");
+        header->set_halign(Gtk::Align::START);
+        m_settings_page.append(*header);
+
+        append_settings_section("General", {SettingToggle{"Launch at startup", false, [](bool v)
+                                                          { std::cout << "Startup: " << v << "\n"; }},
+                                            SettingToggle{"Minimize to tray on close", true, [](bool v)
+                                                          { std::cout << "Tray: " << v << "\n"; }},
+                                            SettingToggle{"Check for updates automatically", true, [](bool v)
+                                                          { std::cout << "Updates: " << v << "\n"; }},
+                                            SettingInput{"Custom Username", "Enter your username", "Player1", [](const std::string &v)
+                                                         { std::cout << "Username changed to: " << v << "\n"; }},
+                                            SettingButton{"Clear Cache", "Clear Now", []()
+                                                          { std::cout << "Cache has been cleared!\n"; }}});
+    }
+
+    void append_settings_section(const std::string &title,
+                                 const std::vector<SettingItem> &items)
+    {
+        auto *sec_lbl = Gtk::make_managed<Gtk::Label>(title);
+        sec_lbl->add_css_class("ky-settings-section-label");
+        sec_lbl->set_halign(Gtk::Align::START);
+        m_settings_page.append(*sec_lbl);
+
+        auto *container = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL);
+        container->set_spacing(0);
+        container->set_homogeneous(false);
+        container->add_css_class("ky-card-toggles-container");
+
+        for (std::size_t i = 0; i < items.size(); ++i)
+        {
+            const auto &item = items[i];
+
+            if (std::holds_alternative<SettingToggle>(item))
+            {
+                const auto &toggle_item = std::get<SettingToggle>(item);
+                m_settings_toggles.push_back(
+                    std::make_unique<Toggle>(toggle_item.label, toggle_item.defaultValue,
+                                             toggle_item.onChange, "ky-card-toggle"));
+                container->append(*m_settings_toggles.back()->getWidget());
+            }
+            else if (std::holds_alternative<SettingButton>(item))
+            {
+                const auto &button_item = std::get<SettingButton>(item);
+
+                auto *row = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 16);
+                row->add_css_class("ky-card-toggle");
+
+                row->set_margin_start(16);
+                row->set_margin_end(16);
+                row->set_margin_top(12);
+                row->set_margin_bottom(12);
+
+                auto *label = Gtk::make_managed<Gtk::Label>(button_item.label);
+                label->set_hexpand(true);
+                label->set_halign(Gtk::Align::START);
+
+                auto *btn = Gtk::make_managed<Gtk::Button>(button_item.buttonText);
+                btn->set_halign(Gtk::Align::END);
+                btn->set_valign(Gtk::Align::CENTER);
+                btn->signal_clicked().connect(button_item.onClick);
+
+                row->append(*label);
+                row->append(*btn);
+                container->append(*row);
+            }
+            else if (std::holds_alternative<SettingInput>(item))
+            {
+                const auto &input_item = std::get<SettingInput>(item);
+
+                auto *row = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 16);
+                row->add_css_class("ky-card-toggle");
+
+                row->set_margin_start(16);
+                row->set_margin_end(16);
+                row->set_margin_top(12);
+                row->set_margin_bottom(12);
+
+                auto *label = Gtk::make_managed<Gtk::Label>(input_item.label);
+                label->set_hexpand(true);
+                label->set_halign(Gtk::Align::START);
+
+                auto *entry = Gtk::make_managed<Gtk::Entry>();
+                entry->set_placeholder_text(input_item.placeholder);
+                entry->set_text(input_item.defaultValue);
+                entry->set_halign(Gtk::Align::END);
+                entry->set_valign(Gtk::Align::CENTER);
+
+                entry->signal_changed().connect([entry, onChange = input_item.onChange]()
+                                                { onChange(entry->get_text()); });
+
+                row->append(*label);
+                row->append(*entry);
+                container->append(*row);
+            }
+
+            if (i + 1 < items.size())
+            {
+                auto *sep = Gtk::make_managed<Gtk::Separator>(Gtk::Orientation::HORIZONTAL);
+                sep->add_css_class("ky-card-toggle-separator");
+                sep->set_hexpand(true);
+                sep->set_halign(Gtk::Align::FILL);
+                container->append(*sep);
+            }
+        }
+
+        m_settings_page.append(*container);
     }
 
     void load_css()
@@ -229,6 +378,7 @@ private:
             css_provider,
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
+
     std::vector<CardData> load_cards_from_json()
     {
         const std::vector<std::string> candidatePaths{
