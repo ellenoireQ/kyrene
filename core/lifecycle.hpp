@@ -1,8 +1,11 @@
+#define TAG "lifecycle"
+
 #include <concepts>
 #include <stop_token>
 #include <thread>
 #include <chrono>
 #include <functional>
+#include <core/logger.hpp>
 
 class Lifecycle
 {
@@ -25,7 +28,7 @@ public:
                 {
                     std::invoke(func);
                     std::this_thread::sleep_for(interval);
-                    std::cout << "Worker is online" << std::endl;
+                    LOG_INFO(TAG, std::format("Worker running {}", typeid(func).name()));
                 }
                 running = false;
             });
