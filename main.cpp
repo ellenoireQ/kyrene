@@ -6,6 +6,7 @@
 #include <class/Toggle.hpp>
 #include <utils/JsonParser.hpp>
 #include <format>
+#include <monitor/cpu_monitor.hpp>
 
 struct ButtonData
 {
@@ -17,8 +18,15 @@ struct ButtonData
 class KyreneWindow : public Gtk::Window
 {
 public:
+    ~KyreneWindow()
+    {
+        cpumon.unregister_cpu_mon();
+    }
+
     KyreneWindow()
     {
+        cpumon.register_cpu_mon();
+
         set_title("Kyrene");
         set_default_size(1000, 650);
         load_css();
@@ -51,6 +59,14 @@ public:
         m_stack.add(m_library_page, "library", "Library");
         m_stack.add(m_perf_page, "performance", "Performance");
         m_stack.add(m_settings_page, "settings", "Settings");
+
+        auto cpumon_data = cpumon.get_data();
+
+        if (cpumon_data.empty())
+        {
+            std::cout << "Data is empty" << std::endl;
+        }
+        std::cout << "" << cpumon_data[0].cpu_name << std::endl;
 
         m_scrolled_window.set_child(m_stack);
         m_scrolled_window.set_policy(
@@ -87,6 +103,7 @@ public:
     }
 
 private:
+    CPUMon cpumon;
     struct CardData
     {
         std::string title;
