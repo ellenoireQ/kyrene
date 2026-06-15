@@ -9,6 +9,8 @@ class_dir = include_directories('class')
 utils_dir = include_directories('utils')
 core_dir = include_directories('core')
 monitor_dir = include_directories('monitor')
+config_dir = include_directories('config')
+
 
 class_dep = declare_dependency(
   include_directories: class_dir
@@ -17,7 +19,7 @@ class_dep = declare_dependency(
 nlohmann_dep = dependency('nlohmann_json', required : true)
 
 utils_dep = declare_dependency(
-  include_directories: [utils_dir, core_dir, monitor_dir],
+  include_directories: [utils_dir, core_dir, monitor_dir, config_dir],
   dependencies: [nlohmann_dep]
 )
 
