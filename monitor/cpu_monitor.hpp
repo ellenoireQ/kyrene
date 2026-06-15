@@ -7,6 +7,7 @@
 #include <mutex>
 #include <string>
 #include <core/lifecycle.hpp>
+#include <config/app_config.hpp>
 
 struct CPUStats
 {
@@ -24,8 +25,12 @@ private:
     std::vector<CPUStats> stats;
     Lifecycle cpu_mon;
     void read_proc_stat(std::vector<CPUStats> &stats);
+    AppConfig &cfg;
 
 public:
+    explicit CPUMon(AppConfig &cfg)
+        : cfg(cfg) {
+          };
     void register_cpu_mon();
     void unregister_cpu_mon();
     std::vector<CPUStats> get_data()

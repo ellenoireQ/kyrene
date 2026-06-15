@@ -39,7 +39,7 @@ void CPUMon::read_proc_stat(std::vector<CPUStats> &stats)
 void CPUMon::register_cpu_mon()
 {
     cpu_mon.start([this]()
-                  { read_proc_stat(std::ref(this->stats)); }, std::chrono::seconds(1));
+                  { read_proc_stat(std::ref(this->stats)); }, std::chrono::seconds(cfg.get<int>(ConfigKey::LifecycleInterval)));
 }
 
 void CPUMon::unregister_cpu_mon()

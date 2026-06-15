@@ -25,6 +25,8 @@ public:
 
     KyreneWindow()
     {
+        cfg.set<int>(ConfigKey::LifecycleInterval, 2);
+
         cpumon.register_cpu_mon();
 
         set_title("Kyrene");
@@ -103,7 +105,8 @@ public:
     }
 
 private:
-    CPUMon cpumon;
+    AppConfig cfg;
+    CPUMon cpumon{cfg};
     struct CardData
     {
         std::string title;
