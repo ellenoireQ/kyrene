@@ -8,6 +8,7 @@
 #include <utils/JsonParser.hpp>
 #include <format>
 #include <monitor/cpu_monitor.hpp>
+#include <future>
 
 struct ButtonData
 {
@@ -386,31 +387,42 @@ private:
             "../assets/allgame.json",
         };
 
-        std::string errorMessage;
-        std::optional<kyrene::utils::JsonParser::Json> json;
+        std::vector<std::future<std::optional<kyrene::utils::JsonParser::Json>>> futures;
 
         for (const auto &candidate : candidatePaths)
         {
-            json = kyrene::utils::JsonParser::tryParseFile(candidate, &errorMessage);
-            if (json.has_value())
+            futures.push_back(std::async(std::launch::async, [candidate]()
+                                         {
+            std::string localError;
+            return kyrene::utils::JsonParser::tryParseFile(candidate, &localError); }));
+        }
+
+        std::optional<kyrene::utils::JsonParser::Json> finalJson = std::nullopt;
+
+        for (auto &fut : futures)
+        {
+            auto jsonResult = fut.get();
+
+            if (jsonResult.has_value() && !jsonResult.value().is_null())
             {
+                finalJson = std::move(jsonResult.value());
                 break;
             }
         }
 
-        if (!json.has_value())
+        if (!finalJson.has_value())
         {
-            std::cerr << "Failed to read allgame.json: " << errorMessage << std::endl;
+            std::cerr << "Failed to read allgame.json from all candidate paths." << std::endl;
             return {
                 {"Fallback Game", "JSON file could not be loaded.", "/org/kyrene/assets/bg/image.png", std::optional<std::string>("ky-card")},
             };
         }
 
-        if (!json->is_object() ||
-            !json->contains("applist") ||
-            !(*json)["applist"].is_object() ||
-            !(*json)["applist"].contains("apps") ||
-            !(*json)["applist"]["apps"].is_array())
+        if (!finalJson->is_object() ||
+            !finalJson->contains("applist") ||
+            !(*finalJson)["applist"].is_object() ||
+            !(*finalJson)["applist"].contains("apps") ||
+            !(*finalJson)["applist"]["apps"].is_array())
         {
             std::cerr << "Invalid JSON structure in allgame.json: expected applist.apps array" << std::endl;
             return {
@@ -419,7 +431,7 @@ private:
         }
 
         std::vector<CardData> cards;
-        const auto &apps = (*json)["applist"]["apps"];
+        const auto &apps = (*finalJson)["applist"]["apps"];
         constexpr std::size_t maxInitialCards = 200;
 
         if (apps.size() > maxInitialCards)
@@ -440,7 +452,7 @@ private:
 
             cards.push_back(CardData{
                 .title = title,
-                .description = "" + std::to_string(appId),
+                .description = std::to_string(appId),
                 .imagePath = "/org/kyrene/assets/bg/image.png",
                 .style = "ky-card",
             });
