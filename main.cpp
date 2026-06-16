@@ -8,7 +8,7 @@
 #include <utils/JsonParser.hpp>
 #include <format>
 #include <monitor/cpu_monitor.hpp>
-#include <future>
+#include <core/asynchronous.hpp>
 
 struct ButtonData
 {
@@ -382,6 +382,7 @@ private:
 
     std::vector<CardData> load_cards_from_json()
     {
+        Async async;
         const std::vector<std::string> candidatePaths{
             "assets/allgame.json",
             "../assets/allgame.json",
@@ -391,10 +392,12 @@ private:
 
         for (const auto &candidate : candidatePaths)
         {
-            futures.push_back(std::async(std::launch::async, [candidate]()
-                                         {
-            std::string localError;
-            return kyrene::utils::JsonParser::tryParseFile(candidate, &localError); }));
+
+            futures.push_back(async.run([&candidate]()
+                                        {
+                                            std::string localError;
+                                            return kyrene::utils::JsonParser::tryParseFile(candidate, &localError); //
+                                        }));
         }
 
         std::optional<kyrene::utils::JsonParser::Json> finalJson = std::nullopt;
