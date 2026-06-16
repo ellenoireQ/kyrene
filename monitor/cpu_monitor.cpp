@@ -36,6 +36,15 @@ void CPUMon::read_proc_stat(std::vector<CPUStats> &stats)
     stats = std::move(temp_stats);
 }
 
+int CPUMon::total(int index)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+
+    return stats[index].idle +
+           stats[index].nice +
+           stats[index].system +
+           stats[index].user;
+}
 void CPUMon::register_cpu_mon()
 {
     cpu_mon.start([this]()

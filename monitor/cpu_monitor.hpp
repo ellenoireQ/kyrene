@@ -33,6 +33,8 @@ public:
           };
     void register_cpu_mon();
     void unregister_cpu_mon();
+    int total(int index);
+
     std::vector<CPUStats> get_data()
     {
         std::lock_guard<std::mutex> lock(mutex);
