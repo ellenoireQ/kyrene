@@ -5,7 +5,6 @@ void CPUMon::read_proc_stat(std::vector<CPUStats> &stats)
     std::ifstream filestat("/proc/stat");
 
     std::string line;
-    std::getline(filestat, line);
 
     std::vector<CPUStats> temp_stats;
 
