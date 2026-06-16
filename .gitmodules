@@ -1,0 +1,3 @@
+[submodule "foshud"]
+	path = foshud
+	url = https://github.com/ellenoireQ/kyrene
