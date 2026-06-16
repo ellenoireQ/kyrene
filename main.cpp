@@ -84,6 +84,16 @@ public:
         }
         std::cout << "" << cpumon_data[0].cpu_name << std::endl;
 
+        Glib::signal_timeout().connect_seconds(
+            [this]() -> bool
+            {
+                auto usage = cpumon.calculate_usage(0);
+                std::cout << "CPU usage: " << usage << "%\n";
+                
+                return true; },
+            2);
+
+        // std::cout << "" << cpumon.get() << std::endl;
         m_scrolled_window.set_child(m_stack);
         m_scrolled_window.set_policy(
             Gtk::PolicyType::NEVER,

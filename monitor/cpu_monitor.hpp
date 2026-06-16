@@ -23,6 +23,7 @@ class CPUMon
 private:
     std::mutex mutex;
     std::vector<CPUStats> stats;
+    std::vector<CPUStats> previous_stats;
     Lifecycle cpu_mon;
     void read_proc_stat(std::vector<CPUStats> &stats);
     AppConfig &cfg;
@@ -35,6 +36,7 @@ public:
     void unregister_cpu_mon();
     int total(int index);
 
+    double calculate_usage(size_t index);
     std::vector<CPUStats> get_data()
     {
         std::lock_guard<std::mutex> lock(mutex);
