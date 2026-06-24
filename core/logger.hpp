@@ -71,14 +71,10 @@ private:
     }
 };
 
-#define LOG_INFO(tag, msg) \
-    Logger::log(Logger::Level::INFO, tag, msg)
+#define LOG_INFO(tag, msg) Logger::log(Logger::Level::INFO, tag, msg)
 
-#define LOG_WARN(tag, msg) \
-    Logger::log(Logger::Level::WARN, tag, msg)
+#define LOG_WARN(tag, msg) Logger::log(Logger::Level::WARN, tag, msg)
 
-#define LOG_ERROR(tag, msg) \
-    Logger::log(Logger::Level::ERROR, tag, msg)
+#define LOG_ERROR(tag, msg) Logger::log(Logger::Level::ERROR, tag, msg)
 
-#define LOG_DEBUG(tag, msg) \
-    Logger::log(Logger::Level::DEBUG, tag, msg)
+#define LOG_DEBUG(tag, msg) Logger::log(Logger::Level::DEBUG, tag, msg)
