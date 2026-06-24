@@ -387,7 +387,7 @@ private:
         Gtk::StyleContext::add_provider_for_display(
             Gdk::Display::get_default(),
             css_provider,
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+            GTK_STYLE_PROVIDER_PRIORITY_USER);
     }
 
     std::vector<CardData> load_cards_from_json()
@@ -475,8 +475,12 @@ private:
     }
 };
 
+#include <cstdlib>
+
 int main(int argc, char *argv[])
 {
+    setenv("GTK_THEME", "Adwaita:dark", 1);
+
     auto app = Gtk::Application::create("org.kyrene.linuz");
     return app->make_window_and_run<KyreneWindow>(argc, argv);
 }
